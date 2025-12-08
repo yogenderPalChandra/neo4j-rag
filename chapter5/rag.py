@@ -17,28 +17,6 @@ driver = GraphDatabase.driver("neo4j://127.0.0.1:7687",
     notifications_min_severity="OFF"
 )
 
-NODE_PROPERTIES_QUERY = """
-CALL apoc.meta.data()
-YIELD label, other, elementType, type, property
-WHERE NOT type = "RELATIONSHIP" AND elementType = "node"
-WITH label AS nodeLabels, collect({property:property, type:type}) AS properties
-RETURN {labels: nodeLabels, properties: properties} AS output
-"""
-REL_PROPERTIES_QUERY = """
-CALL apoc.meta.data()
-YIELD label, other, elementType, type, property
-WHERE NOT type = "RELATIONSHIP" AND NOT elementType = "relationship"
-WITH label AS relType, collect({property:property, type:type}) AS properties
-RETURN {type: relType, properties: properties} AS output
-"""
-REL_QUERY = """
-CALL apoc.meta.data()
-YIELD label, other, elementType, type, property
-WHERE type = "RELATIONSHIP" AND elementType = "node"
-UNWIND other AS other_node
-RETURN {start: label, type: property, end: toString(other_node)} AS output
-"""
-
 def get_structured_schema(driver: neo4j.Driver) -> dict[str, Any]:
     node_labels_response = driver.execute_query(NODE_PROPERTIES_QUERY)
     node_properties = [
